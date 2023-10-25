@@ -30,16 +30,16 @@ template <class data_T, int NIN1, int NIN2> void merge(data_T data1[NIN1], data_
     }
 }
 
-// /* ---
-//  * Balanced tree reduce implementation.
-//  * For use in scenarios where Quartus cannot expression balance
-//  * Reduces an array of inputs to a single value using the template binary operator 'Op',
-//  * for example summing all elements with Op_add, or finding the maximum with Op_max
-//  * Use only when the input array is fully unrolled. Or, slice out a fully unrolled section
-//  * before applying and accumulate the result over the rolled dimension.
-//  * --- */
+/* ---
+ * Balanced tree reduce implementation.
+ * For use in scenarios where Quartus cannot expression balance
+ * Reduces an array of inputs to a single value using the template binary operator 'Op',
+ * for example summing all elements with Op_add, or finding the maximum with Op_max
+ * Use only when the input array is fully unrolled. Or, slice out a fully unrolled section
+ * before applying and accumulate the result over the rolled dimension.
+ * --- */
 // template <class T, int N, class Op> T reduce(const T *x, Op op) {
-//     static constexpr int leftN = pow2(floorlog2(N - 1)) > 0 ? pow2(floorlog2(N - 1)) : 0;
+//     static constexpr int leftN = pow2<floorlog2<N - 1>::val>::val > 0 ? pow2<floorlog2<N - 1>::val>::val : 0;
 //     static constexpr int rightN = N - leftN > 0 ? N - leftN : 0;
 //     if (N == 1) {
 //         return x[0];
@@ -49,6 +49,28 @@ template <class data_T, int NIN1, int NIN2> void merge(data_T data1[NIN1], data_
 //     }
 //     return op(reduce<T, leftN, Op>(x, op), reduce<T, rightN, Op>(x + leftN, op));
 // }
+
+// alternate reduce - basic
+template <class T, int N, class Op> T reduce(const T *x, Op op) {
+    if (N == 1) {
+        return x[0];
+    }
+    auto val = op(x[0], x[1]); 
+    for (int i = 2; i < N; i++) {
+        val = op(val, x[i]);
+    }
+    return val;
+}
+// template <class T, int N, class Op> T reduce(const T *x, Op op) {
+//     static constexpr int depth = ceillog2<N>::val;
+//     static constexpr int N2 = (N+1) / 2;
+
+//     static T[depth][N2]; // where temporaries are stored
+//     for (int d = 0; d < depth; d++) {
+//         for (int i = 0; i < N2; i++) {
+
+//         }
+//     }
 
 template <class T> class Op_add {
   public:

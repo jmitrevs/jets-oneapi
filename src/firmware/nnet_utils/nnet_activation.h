@@ -103,7 +103,7 @@ enum class softmax_implementation { latency = 0, legacy = 1, stable = 2, argmax 
 
 template <class data_T, typename CONFIG_T> inline unsigned softmax_stable_idx_from_real_val(const data_T x) {
     // Number of address bits for table
-    static constexpr int N = ceillog2(CONFIG_T::table_size);
+    static constexpr int N = ceillog2<CONFIG_T::table_size>::val;
 
     // Slice the top N bits of the input
     hls_register ac_int<N, false> y = x.template slc<N>(x.width - N - 1);
@@ -115,7 +115,7 @@ template <class data_T, typename CONFIG_T> inline unsigned softmax_stable_idx_fr
 
 template <class data_T, typename CONFIG_T> inline unsigned softmax_latency_idx_from_real_val(const data_T x) {
     // Number of address bits for table
-    static constexpr int N = ceillog2(CONFIG_T::table_size);
+    static constexpr int N = ceillog2<CONFIG_T::table_size>::val;
 
     // Slice the top N bits of the input
     hls_register ac_int<N, false> y = x.template slc<N>(x.width - N);
