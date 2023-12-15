@@ -61,72 +61,71 @@ int main(int argc, char **argv) {
     std::vector<output_data_t> outputs;
 
     if (fin.is_open() && fpr.is_open()) {
-        // std::vector<std::vector<float>> predictions;
-        // unsigned int num_iterations = 0;
-        // for (; std::getline(fin, iline) && std::getline(fpr, pline); num_iterations++) {
-        //     if (num_iterations % CHECKPOINT == 0) {
-        //         std::cout << "Processing input " << num_iterations << std::endl;
-        //     }
+        std::vector<std::vector<float>> predictions;
+        unsigned int num_iterations = 0;
+        for (; std::getline(fin, iline) && std::getline(fpr, pline); num_iterations++) {
+            if (num_iterations % CHECKPOINT == 0) {
+                std::cout << "Processing input " << num_iterations << std::endl;
+            }
 
-        //     std::vector<float> in;
-        //     std::vector<float> pr;
-        //     float current;
+            std::vector<float> in;
+            std::vector<float> pr;
+            float current;
 
-        //     std::stringstream ssin(iline);
-        //     while (ssin >> current) {
-        //         in.push_back(current);
-        //     }
+            std::stringstream ssin(iline);
+            while (ssin >> current) {
+                in.push_back(current);
+            }
 
-        //     std::stringstream sspred(pline);
-        //     while (sspred >> current) {
-        //         pr.push_back(current);
-        //     }
-        //     if (in.size() != N_INPUT_1_1) {
-        //         throw std::runtime_error("The input size does not match");
-        //     }
-        //     if (pr.size() != N_LAYER_11) {
-        //         throw std::runtime_error("The output size does not match");
-        //     }
+            std::stringstream sspred(pline);
+            while (sspred >> current) {
+                pr.push_back(current);
+            }
+            if (in.size() != N_INPUT_1_1) {
+                throw std::runtime_error("The input size does not match");
+            }
+            if (pr.size() != N_LAYER_11) {
+                throw std::runtime_error("The output size does not match");
+            }
 
-        //     // hls-fpga-machine-learning insert data
-        //     inputs.emplace_back();
-        //     std::copy(in.cbegin(), in.cend(), inputs.back());
-        //     outputs.emplace_back();
-        //     predictions.push_back(std::move(pr));
-        // }
+            // hls-fpga-machine-learning insert data
+            inputs.emplace_back();
+            std::copy(in.cbegin(), in.cend(), inputs.back().begin());
+            outputs.emplace_back();
+            predictions.push_back(std::move(pr));
+        }
+        // Do this separately to avoid vector reallocation
+        // hls-fpga-machine-learning insert top-level-function
+        for(int i = 0; i < num_iterations; i++) {
+            InPipe::write(q, inputs[i]);
+            q.single_task(MyProject{});  // once or once for each
+        }
+        q.wait();
 
-        // // Do this separately to avoid vector reallocation
-        // // hls-fpga-machine-learning insert top-level-function
-        // for(int i = 0; i < num_iterations; i++) {
-        //     InPipe::write(q, inputs[i]);
-        //     q.single_task(MyProject{});  // once or once for each
-        // }
-        // q.wait();
-
-        // for (int j = 0; j < num_iterations; j++) {
-        //     // hls-fpga-machine-learning insert tb-output
-        //     outputs[j] = OutPipe::read(q);
-        //     for(int i = 0; i < N_LAYER_11; i++) {
-        //       fout << outputs[j][i] << " ";
-        //     }
-        //     fout << std::endl;
-        //     if (j % CHECKPOINT == 0) {
-        //         std::cout << "Predictions" << std::endl;
-        //         // hls-fpga-machine-learning insert predictions
-        //         for(int i = 0; i < N_LAYER_11; i++) {
-        //           std::cout << predictions[j][i] << " ";
-        //         }
-        //         std::cout << std::endl;
-        //         std::cout << "Quantized predictions" << std::endl;
-        //         // hls-fpga-machine-learning insert quantized
-        //         for(int i = 0; i < N_LAYER_11; i++) {
-        //           std::cout << outputs[j][i] << " ";
-        //         }
-        //         std::cout << std::endl;
-        //     }
-        // }
-        // fin.close();
-        // fpr.close();
+        for (int j = 0; j < num_iterations; j++) {
+            // hls-fpga-machine-learning insert tb-output
+            outputs[j] = OutPipe::read(q);
+            for(int i = 0; i < N_LAYER_11; i++) {
+              fout << outputs[j][i] << " ";
+            }
+            fout << std::endl;
+            if (j % CHECKPOINT == 0) {
+                std::cout << "Predictions" << std::endl;
+                // hls-fpga-machine-learning insert predictions
+                for(int i = 0; i < N_LAYER_11; i++) {
+                  std::cout << predictions[j][i] << " ";
+                }
+                std::cout << std::endl;
+                std::cout << "Quantized predictions" << std::endl;
+                // hls-fpga-machine-learning insert quantized
+                for(int i = 0; i < N_LAYER_11; i++) {
+                  std::cout << outputs[j][i] << " ";
+                }
+                std::cout << std::endl;
+            }
+        }
+        fin.close();
+        fpr.close();
     } else {
         const unsigned int num_iterations = 10;
         std::cout << "INFO: Unable to open input/predictions file, using default input with " << num_iterations
@@ -141,10 +140,10 @@ int main(int argc, char **argv) {
         // hls-fpga-machine-learning insert top-level-function
         for(int i = 0; i < num_iterations; i++) {
             InPipe::write(q, inputs[i]);
-            //q.single_task(MyProject{});
+            q.single_task(MyProject{});
         }
-        q.single_task(MyProject{});
-        //q.wait();
+        //q.single_task(MyProject{});
+        q.wait();
 
         for (int j = 0; j < num_iterations; j++) {
             // hls-fpga-machine-learning insert output
