@@ -11,7 +11,7 @@
 #include "weights/w11.h"
 #include "weights/b11.h"
 
-streaming_pipelined_interface void MyProject::operator()() const {
+void MyProject::operator()() const {
     // ****************************************
     // NETWORK INSTANTIATION
     // ****************************************

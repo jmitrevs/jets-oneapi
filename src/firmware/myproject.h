@@ -21,7 +21,15 @@ using OutPipe = sycl::ext::intel::experimental::pipe<OutPipeID, output_data_t, 0
 class MyProjectID;
 
 struct MyProject {
-    streaming_pipelined_interface SYCL_EXTERNAL void operator()() const;
+
+    // kernel property method to config invocation interface
+    auto get(sycl::ext::oneapi::experimental::properties_tag) {
+        return sycl::ext::oneapi::experimental::properties{
+            sycl::ext::intel::experimental::streaming_interface<>,
+            sycl::ext::intel::experimental::pipelined<>};
+    }
+
+    SYCL_EXTERNAL void operator()() const;
 };
 
 
