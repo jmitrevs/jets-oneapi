@@ -64,16 +64,6 @@ template <class T, int N, class Op> T reduce(const T *x, Op op) {
 //     }
 //     return val;
 // }
-// template <class T, int N, class Op> T reduce(const T *x, Op op) {
-//     static constexpr int depth = ceillog2<N>::val;
-//     static constexpr int N2 = (N+1) / 2;
-
-//     static T[depth][N2]; // where temporaries are stored
-//     for (int d = 0; d < depth; d++) {
-//         for (int i = 0; i < N2; i++) {
-
-//         }
-//     }
 
 template <class T> class Op_add {
   public:
